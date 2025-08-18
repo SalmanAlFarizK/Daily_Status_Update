@@ -321,6 +321,31 @@ void ReverseLinkedList(void)
     return;
 }
 
+void ReverseKNodeInLL(void)
+{
+    Node *Curr = Head, *Prev = NULL, *Next = NULL;
+    Node *Tail = Head;  // after reversal, Tail will be the last node of the reversed segment
+    int count = 0;
+    int K = 5;
+
+    // Reverse first K nodes
+    while (Curr != NULL && count < K) {
+        Next = Curr->ptNext;
+        Curr->ptNext = Prev;
+        Prev = Curr;
+        Curr = Next;
+        count++;
+    }
+
+    // Connect the tail of reversed segment to the rest of the list
+    if (Tail != NULL) {
+        Tail->ptNext = Curr;
+    }
+
+    // Update head to the new first node
+    Head = Prev;
+}
+
 int main()
 {
     InsertIntoLL(1);
@@ -335,12 +360,14 @@ int main()
     InsertIntoLL(4);
     InsertIntoLL(8);
     PrintLL();
-    ReverseFromLeftToRight();
+    ReverseKNodeInLL();
     PrintLL();
-    RemoveDuplicatesFromLL();
-    PrintLL();
-    ReverseLinkedList();
-    PrintLL();
+    // ReverseFromLeftToRight();
+    // PrintLL();
+    // RemoveDuplicatesFromLL();
+    // PrintLL();
+    // ReverseLinkedList();
+    // PrintLL();
 
     return 0;
 }
