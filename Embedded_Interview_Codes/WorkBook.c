@@ -14,7 +14,13 @@ typedef struct
     int tail;  // read index
 } CircBuf_t;
 
-// 03, 04, 06,08, 09, 10, 11, 14, 19, 20, 21, 22, 23, 29, 30, 33, 35, 37, 40 - 44, 
+typedef union _FloatToBin_
+{
+    float fVal;
+    uint32_t uiVal;
+} FloatToBin;
+
+// 03, 04, 10, 14, 19, 21, 22, 23, 30, 31, 35, 40 - 44, 
 void PositionOfRightMostSetBit(void);
 void Cnt1sInBinaryUsingLUT(void);
 void ReverseEndianessOf32Bit(void);
@@ -38,10 +44,14 @@ void CntSetBits(void);
 void MoveAllZeroToEnd(void);
 void CircularBufferForByteStorage(void);
 void IntSqrtWithBitManPul(void);
+void FastExponentBinaryMethod(void);
+void UserDefinedMemmove(void);
+void FloatToBinary(void);
+void FloatToBinaryUnionMethod(void);
 
 int main()
 {
-    IntSqrtWithBitManPul();
+    FloatToBinaryUnionMethod();
     return 0;
 }
 
@@ -299,18 +309,73 @@ void CalcCrc32(void)
 
 void FloatDecimalString(void)
 {
-    float fVal = 3.14;
-    char cFloatBuff[20];
-    int iWhole = 0;
-    float fFrac = 0;
+    float fVal = 3.1415f;   // Example input
+    int N = 3;              // Number of fractional digits
 
-    iWhole = (int)fVal;
-    fFrac = fVal - fFrac;
+    // Handle NaN and Inf explicitly
+    if (isnan(fVal)) {
+        printf("NaN\n");
+        return;
+    }
+    if (isinf(fVal)) {
+        if (fVal < 0) putchar('-');
+        printf("Inf\n");
+        return;
+    }
 
-    sprintf(cFloatBuff,"%.2f",fVal);
+    // Step 1: Handle sign
+    if (fVal < 0) {
+        putchar('-');
+        fVal = -fVal; // work with absolute value
+    }
 
-    printf("%s",cFloatBuff);
-    return;
+    // Step 2: Split into whole and fractional part
+    int whole = (int)fVal;
+    float frac = fVal - (float)whole;
+
+    // Step 3: Scale fractional part by 10^N
+    int scale = 1;
+    for (int i = 0; i < N; i++) {
+        scale *= 10;
+    }
+    int frac_scaled = (int)(frac * scale + 0.5f);  // rounding
+
+    // Handle case where rounding bumps into next whole
+    if (frac_scaled >= scale) {
+        whole += 1;
+        frac_scaled -= scale;
+    }
+
+    // Step 4a: Print whole part (digit by digit)
+    char buf[20];
+    int idx = 0;
+    if (whole == 0) {
+        buf[idx++] = '0';
+    } else {
+        int temp = whole;
+        while (temp > 0) {
+            buf[idx++] = '0' + (temp % 10);
+            temp /= 10;
+        }
+    }
+    // Digits are reversed
+    for (int i = idx - 1; i >= 0; i--) {
+        putchar(buf[i]);
+    }
+
+    // Step 4b: Print decimal point
+    putchar('.');
+
+    // Step 4c: Print fractional digits with zero padding
+    int div = scale / 10;
+    for (int i = 0; i < N; i++) {
+        int digit = frac_scaled / div;
+        putchar('0' + digit);
+        frac_scaled %= div;
+        div /= 10;
+    }
+
+    putchar('\n');
 }
 
 void DetectMulOverFlow(void)
@@ -697,5 +762,93 @@ void IntSqrtWithBitManPul(void)
 
     printf("result is %d\n",res);
 
+    return;
+}
+
+void FastExponentBinaryMethod(void)
+{
+    int iBase = 2;
+    int iExponent = 10;
+    int iRes = 1;
+
+    while(iExponent > 0)
+    {
+        if(iExponent & 1)
+        {
+            iRes *= iBase;
+        }
+        iBase *= iBase;
+        iExponent >>= 1;
+    }
+
+    printf("The result is %d\n",iRes);
+
+    return;
+}
+
+void UserDefinedMemmove(void)
+{
+    char arr1[] = {'A','B','C','D','E','F','G','H'};
+    char* dest = &arr1[2];
+    char* src = &arr1[0];
+    int size = 4;
+
+    if (dest < src) {
+        // Safe to copy forward
+        for (size_t i = 0; i < size; i++) {
+            dest[i] = src[i];
+        }
+    } else {
+        // Overlap case: copy backwards
+        for (size_t i = size; i > 0; i--) {
+            dest[i - 1] = src[i - 1];
+        }
+    }
+
+    printf("After memove: ");
+    for(int i = 0; i < 8; ++i)
+    {
+        printf("%c ",arr1[i]);
+    }
+    printf("\n");
+
+    return;
+}
+
+void FloatToBinary(void)
+{
+    float fVal = 1.0f;
+    uint32_t uiVal = 0;
+
+    memcpy(&uiVal, &fVal, sizeof(uiVal));
+
+    for (int i = 31; i >= 0; --i) 
+    {
+        char c = ((uiVal >> i) & 1) ? '1' : '0';
+        printf("%c",c);
+        if(i == 31 || i == 23)
+        {
+            printf(" ");
+        }
+    }
+    printf("\n");
+    return;
+}
+
+void FloatToBinaryUnionMethod(void)
+{
+    FloatToBin tFBVal;
+
+    tFBVal.fVal = -3.5;
+
+    for(int i = 31; i >= 0; --i)
+    {
+        printf("%d",(tFBVal.uiVal >> i) & 1);
+        if(i == 31 || i == 23)
+        {
+            printf(" ");
+        }
+    }
+    printf("\n");
     return;
 }

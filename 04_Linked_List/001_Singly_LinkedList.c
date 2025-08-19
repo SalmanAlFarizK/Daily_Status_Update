@@ -321,6 +321,34 @@ void ReverseLinkedList(void)
     return;
 }
 
+Node* RevLLUsingRecc(Node* ptHead)
+{
+    if(ptHead == NULL ||
+       ptHead->ptNext == NULL)
+    {
+        return ptHead;
+    }
+    
+    Node* revHead = RevLLUsingRecc(ptHead->ptNext);
+
+    // Make the current head's next node point back to the current head.
+    // This effectively reverses the link between head and head->next.
+    ptHead->ptNext->ptNext = ptHead;
+
+    // Set the current head's next pointer to NULL, as it will become the new tail
+    // of the reversed sublist (or the entire list if it's the original head).
+    ptHead->ptNext = NULL;
+
+    // Return the new head of the reversed list.
+    return revHead;
+}
+
+void ReverseLLUsingRecc(void)
+{
+    Head = RevLLUsingRecc(Head);
+    return;
+}
+
 void ReverseKNodeInLL(void)
 {
     Node *Curr = Head, *Prev = NULL, *Next = NULL;
@@ -360,7 +388,9 @@ int main()
     InsertIntoLL(4);
     InsertIntoLL(8);
     PrintLL();
-    ReverseKNodeInLL();
+    ReverseLLUsingRecc();
+    PrintLL();
+    ReverseLinkedList();
     PrintLL();
     // ReverseFromLeftToRight();
     // PrintLL();
